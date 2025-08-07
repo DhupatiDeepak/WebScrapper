@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper | Extract Clean Content</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg font-sans">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Web Content Extractor</h1>
+            <p class="text-xl text-white opacity-90">Get clean, organized content from any website</p>
+            <div class="mt-6">
+                <i class="fas fa-spider text-white text-3xl animate-bounce"></i>
+            </div>
+        </header>
+
+        <!-- Main Form -->
+        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden mb-12 pulse">
+            <div class="p-6 md:p-8">
+                <form id="scraperForm" class="space-y-4">
+                    <div>
+                        <label for="url" class="block text-lg font-medium text-gray-800 mb-2">
+                            <i class="fas fa-link mr-2 text-purple-600"></i>Website URL
+                        </label>
+                        <div class="flex">
+                            <input 
+                                type="url" 
+                                id="url" 
+                                required 
+                                placeholder="https://example.com" 
+                                class="flex-1 px-4 py-3 border-2 border-purple-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                            <button 
+                                type="submit" 
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-r-lg font-medium transition duration-300 flex items-center"
+                            >
+                                <i class="fas fa-search mr-2"></i> Extract
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="includeImages" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label for="includeImages" class="ml-2 block text-sm text-gray-700">Include images in results</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden max-w-5xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Extracted Content</h2>
+                <button id="copyBtn" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition duration-300 flex items-center">
+                    <i class="fas fa-copy mr-2"></i> Copy
+                </button>
+            </div>
+            
+            <div class="content-card rounded-xl shadow-2xl overflow-hidden p-6 md:p-8">
+                <div id="loading" class="hidden text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-4"></i>
+                    <p class="text-gray-700">Scraping website content...</p>
+                </div>
+                
+                <div id="contentDisplay" class="prose max-w-none">
+                    <!-- Content will be inserted here -->
+                </div>
+            </div>
+            
+            <div id="errorDisplay" class="hidden mt-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                <p><i class="fas fa-exclamation-circle mr-2"></i> <span id="errorMessage"></span></p>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-5xl mx-auto mt-16">
+            <h2 class="text-2xl font-bold text-white text-center mb-8">Why Use Our Web Scraper?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white bg-opacity-90 rounded-xl p-6 shadow-lg">
+                    <div class="text-purple-600 text-3xl mb-4"><i class="fas fa-broom"></i></div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Clean Content</h3>
+                    <p class="text-gray-600">Get rid of ads, navigation, and other clutter. Just the main content you need.</p>
+                </div>
+                <div class="bg-white bg-opacity-90 rounded-xl p-6 shadow-lg">
+                    <div class="text-purple-600 text-3xl mb-4"><i class="fas fa-list-ul"></i></div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Organized Format</h3>
+                    <p class="text-gray-600">Content is neatly structured with proper headings and bullet points.</p>
+                </div>
+                <div class="bg-white bg-opacity-90 rounded-xl p-6 shadow-lg">
+                    <div class="text-purple-600 text-3xl mb-4"><i class="fas fa-bolt"></i></div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Fast Processing</h3>
+                    <p class="text-gray-600">Quickly extract content without waiting for the whole page to load.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-6 text-white opacity-80 text-sm">
+        <p>© 2023 Web Content Extractor | Made with <i class="fas fa-heart text-red-400"></i> for clean content</p>
+    </footer>
+
+    <script>
+        document.getElementById('scraperForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const includeImages = document.getElementById('includeImages').checked;
+            const resultsSection = document.getElementById('results');
+            const loadingElement = document.getElementById('loading');
+            const contentDisplay = document.getElementById('contentDisplay');
+            const errorDisplay = document.getElementById('errorDisplay');
+            
+            // Show loading state
+            resultsSection.classList.remove('hidden');
+            loadingElement.classList.remove('hidden');
+            contentDisplay.innerHTML = '';
+            errorDisplay.classList.add('hidden');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        includeImages: includeImages
+                    })
+                });
+
+                const responseClone = response.clone();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    const errorText = await responseClone.text();
+                    throw new Error(errorText || "Invalid response from server");
+                }
+
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to scrape the website.");
+                }
+
+                let htmlContent = '';
+
+                if (data.title) {
+                    htmlContent += `<h1 class="text-3xl font-bold text-gray-800 mb-6">${data.title}</h1>`;
+                }
+
+                if (data.content) {
+                    htmlContent += `<div class="prose max-w-none">${data.content}</div>`;
+                }
+
+                if (includeImages && data.images && data.images.length > 0) {
+                    htmlContent += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">`;
+                    data.images.forEach(img => {
+                        htmlContent += `<img src="${img}" alt="Extracted content image" class="rounded-lg shadow-md">`;
+                    });
+                    htmlContent += `</div>`;
+                }
+
+                contentDisplay.innerHTML = htmlContent;
+
+            } catch (error) {
+                let cleanMessage = error.message;
+                if (cleanMessage.includes('<!DOCTYPE html>')) {
+                    cleanMessage = "Invalid URL or website not found.";
+                }
+                document.getElementById('errorMessage').textContent = cleanMessage;
+                errorDisplay.classList.remove('hidden');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        });
+
+        // Copy to clipboard
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const content = document.getElementById('contentDisplay').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
